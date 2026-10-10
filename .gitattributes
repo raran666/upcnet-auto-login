@@ -1,0 +1,20 @@
+# 换行符规则
+# 这个工具是给 Windows 用的，.bat / .ps1 / .vbs 必须是 CRLF 换行，
+# 否则别人在别的系统上克隆再拷到 Windows，脚本可能不工作。
+# 加这个文件，谁克隆下来拿到的都是正确的换行符。
+
+* text=auto
+
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+*.vbs  text eol=crlf
+
+*.md   text eol=lf
+*.txt  text eol=lf
+
+# 二进制文件不做换行符转换
+*.png  binary
+*.jpg  binary
+*.ico  binary
+*.zip  binary
