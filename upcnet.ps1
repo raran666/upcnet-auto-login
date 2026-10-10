@@ -59,9 +59,13 @@ $RedirectProbes = @(
 )
 
 # 认证服务器地址：先用 IP（不需要 DNS），失败再用域名。
+# ★ 必须 HTTPS 优先！登录时密码是明文放在请求体里的，
+#   走 HTTP 的话，同一个开放 WiFi（比如 UPC）下抓包就能看到学号密码。
+#   （曾经把纯 IP 的 http 放前面，理由是“断网时 DNS 失效”，
+#     后来实测发现未认证状态下 wlan.upc.edu.cn 解析正常，那个理由不成立。）
 $PortalBases = @(
-    'http://121.251.251.217/eportal/InterFace.do?method=',
-    'https://wlan.upc.edu.cn/eportal/InterFace.do?method='
+    'https://wlan.upc.edu.cn/eportal/InterFace.do?method=',
+    'http://121.251.251.217/eportal/InterFace.do?method='    # 仅作最后退路，会记警告
 )
 
 $ScriptPath = $PSCommandPath
@@ -232,6 +236,9 @@ function Invoke-PortalLogin([string]$UserId, [string]$Password, [string]$Query, 
 
     $lastErr = ''
     foreach ($base in $PortalBases) {
+        if ($base -like 'http://*') {
+            Write-Log '⚠ 警告：HTTPS 走不通，退回不加密的 HTTP 发送密码（同一网络下可能被监听）'
+        }
         try {
             $resp = Invoke-WebRequest -Uri ($base + 'login') -Method POST -Body $body `
                     -ContentType 'application/x-www-form-urlencoded; charset=UTF-8' `
